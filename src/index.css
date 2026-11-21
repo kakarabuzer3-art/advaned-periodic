@@ -1,0 +1,159 @@
+@import 'tailwindcss';
+
+@theme {
+  --font-sans: ui-sans-serif, system-ui, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+  --font-mono: ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+  --color-ink: #0b121d;
+  --color-panel: #121b2a;
+  --color-panel-2: #1a2640;
+  --color-line: #2a3a55;
+  --color-text: #e8eef7;
+  --color-muted: #a8b7cc;
+  --color-warn: #f2c14e;
+}
+
+:root {
+  color-scheme: dark;
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--color-ink);
+  color: var(--color-text);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+/* ---------- Focus: one consistent, high-contrast ring ---------- */
+:where(button, a, input, select, summary, [tabindex]):focus-visible {
+  outline: 2px solid #f8fafc;
+  outline-offset: 2px;
+}
+
+/* Hide the browser's built-in clear button; the app provides its own. */
+input[type='search']::-webkit-search-cancel-button { appearance: none; display: none; }
+
+/* ---------- Category palette (also encoded in text/labels, never colour alone) ---------- */
+[data-cat='alkali-metal'] { --cat: #ef6a55; }
+[data-cat='alkaline-earth-metal'] { --cat: #f0a53c; }
+[data-cat='transition-metal'] { --cat: #4f93e6; }
+[data-cat='post-transition-metal'] { --cat: #8da2c4; }
+[data-cat='metalloid'] { --cat: #d6c445; }
+[data-cat='reactive-nonmetal'] { --cat: #55c783; }
+[data-cat='halogen'] { --cat: #2ab5a5; }
+[data-cat='noble-gas'] { --cat: #a98ae8; }
+[data-cat='lanthanoid'] { --cat: #f08fbc; }
+[data-cat='actinoid'] { --cat: #c8607f; }
+
+/* ---------- Periodic table grid ---------- */
+.pt {
+  display: grid;
+  /* label column + 18 groups */
+  grid-template-columns: 1.25rem repeat(18, minmax(2.6rem, 1fr));
+  /* label row + periods 1-7 + spacer (row 8) + lanthanoid and actinoid rows (9, 10) */
+  grid-template-rows: 1.25rem repeat(7, auto) 0.9rem repeat(2, auto);
+  gap: 0.2rem;
+  min-width: 54rem;
+}
+
+@media (min-width: 1536px) {
+  .pt { grid-template-columns: 1.25rem repeat(18, minmax(3.3rem, 1fr)); gap: 0.25rem; }
+}
+
+.pt-label {
+  display: grid;
+  place-items: center;
+  font: 600 0.65rem/1 var(--font-mono);
+  color: var(--color-muted);
+}
+
+.tile {
+  position: relative;
+  container-type: inline-size;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  aspect-ratio: 1 / 1.1;
+  min-width: 0;
+  padding: 0.1rem;
+  border: 1px solid color-mix(in oklab, var(--cat, #8da2c4) 45%, transparent);
+  border-top: 3px solid var(--cat, #8da2c4);
+  border-radius: 0.375rem;
+  background: color-mix(in oklab, var(--cat, #8da2c4) 17%, var(--color-panel));
+  color: var(--color-text);
+  cursor: pointer;
+  font: inherit;
+  transition: opacity 0.15s, transform 0.12s, box-shadow 0.12s;
+}
+.tile:hover { transform: translateY(-1px); box-shadow: 0 4px 14px rgb(0 0 0 / 0.45); }
+.tile[data-dimmed='true'] { opacity: 0.2; }
+.tile[data-dimmed='true']:hover, .tile[data-dimmed='true']:focus-visible { opacity: 0.75; }
+/* The open element must always stay visible, even if it falls outside the current filters. */
+.tile[aria-current='true'] { opacity: 1; }
+.tile[aria-current='true'] {
+  box-shadow: 0 0 0 2px var(--color-ink), 0 0 0 4px #f8fafc;
+  z-index: 1;
+}
+.tile[data-predicted='true'] { border-style: dashed; border-top-style: solid; }
+.tile-z { position: absolute; top: 0.15rem; left: 0.25rem; font: 500 0.58rem/1 var(--font-mono); color: var(--color-muted); }
+.tile-sym { font-weight: 700; line-height: 1; font-size: clamp(0.95rem, 34cqw, 1.55rem); }
+.tile-name, .tile-mass { display: none; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; line-height: 1.15; }
+.tile-name { font-size: 0.58rem; }
+.tile-mass { font: 500 0.52rem/1.15 var(--font-mono); color: var(--color-muted); }
+@container (min-width: 3.1rem) {
+  .tile-name, .tile-mass { display: block; }
+}
+
+.marker {
+  display: grid;
+  place-items: center;
+  border: 1px dashed color-mix(in oklab, var(--cat, #8da2c4) 70%, transparent);
+  border-radius: 0.375rem;
+  font: 600 0.6rem/1.1 var(--font-mono);
+  color: var(--cat, #8da2c4);
+  text-align: center;
+}
+
+/* ---------- Legend / category filter (sits in the empty block of the table) ---------- */
+.legend-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.3rem 0.6rem;
+  border: 1px solid var(--color-line);
+  border-radius: 999px;
+  background: var(--color-panel);
+  color: var(--color-text);
+  font: 500 0.75rem/1.2 var(--font-sans);
+  cursor: pointer;
+}
+.legend-btn::before { content: ''; width: 0.7rem; height: 0.7rem; border-radius: 3px; background: var(--cat, #8da2c4); flex: none; }
+.legend-btn[aria-pressed='true'] { border-color: var(--cat, #8da2c4); background: color-mix(in oklab, var(--cat, #8da2c4) 24%, var(--color-panel)); }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { transition: none !important; animation: none !important; scroll-behavior: auto !important; }
+}
+
+dialog.sheet { margin: 0; padding: 0; border: 0; background: transparent; max-width: none; max-height: none; width: 100%; height: 100%; color: inherit; }
+dialog.sheet::backdrop { background: rgb(4 8 14 / 0.72); }
+
+/* ---------- Glossary term links ---------- */
+.term {
+  display: inline;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  cursor: help;
+  text-decoration: underline dotted;
+  text-underline-offset: 0.2em;
+}
+.term:hover { text-decoration-style: solid; }
